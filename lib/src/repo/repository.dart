@@ -1,4 +1,6 @@
 import 'package:my_game_library/src/models/game_model.dart';
+import 'package:my_game_library/src/models/platform_model.dart';
+import 'package:my_game_library/src/models/platform_logo_model.dart';
 import 'package:my_game_library/src/repo/igdb_api_provider.dart';
 import 'package:my_game_library/src/repo/igdb_db_provider.dart';
 
@@ -78,26 +80,76 @@ class Repository {
     return gamesList;
   }
 
+  /// Restituisce tutte le piattaforme
+  Future<List<PlatformModel>> fetchPlatforms() async {
+    List<PlatformModel> platformsList;
+    var source;
+
+    for (source in sources) {
+      platformsList = await source.fetchPlatforms();
+      if (platformsList != null) {
+        for (final cache in caches) {
+          if (cache != source) {
+            cache.savePlatforms(platformsList);
+          }
+        }
+        break;
+      }
+    }
+
+    return platformsList;
+  }
+
+  /// Restituisce l'oggetto che mappa il logo di una piattaforma
+  Future<PlatformLogoModel> fetchPlatformLogo(int id) async {
+    PlatformLogoModel platformLogo;
+    var source;
+
+    if (id != null) {
+      for (source in sources) {
+        platformLogo = await source.fetchPlatformLogo(id);
+        if (platformLogo != null) {
+          for (final cache in caches) {
+            if (cache != source) {
+              cache.savePlatformLogo(platformLogo);
+            }
+          }
+          break;
+        }
+      }
+    }
+
+    return platformLogo;
+  }
 
   /// Metodo per cancellare tutte le cache
   Future<Null> clearCache() async {
-    for(final cache in caches){
+    for (final cache in caches) {
       await cache.clear();
     }
   }
-
 }
 
 abstract class Source {
   Future<List<GameModel>> fetchGames({int id, String query});
+
   Future<List<GameModel>> fetchLatestGames({String query});
+
   Future<List<GameModel>> fetchFavoriteGames({String query});
+
+  Future<List<PlatformModel>> fetchPlatforms();
+
+  Future<PlatformLogoModel> fetchPlatformLogo(int id);
 }
 
 abstract class Cache {
   Future<int> saveGame(GameModel game);
 
   Future<int> saveGames(List<GameModel> games);
+
+  Future<int> savePlatforms(List<PlatformModel> platforms);
+
+  Future<int> savePlatformLogo(PlatformLogoModel platformLogo);
 
   Future<int> clear();
 }

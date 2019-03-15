@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:my_game_library/src/utils/igdb/igdb_game_fields.dart';
+import 'package:my_game_library/src/utils/igdb/igdb_games.dart';
 import 'package:my_game_library/src/utils/sqflite/db_personal_game_fields.dart';
 
 /// Classe di model di un gioco

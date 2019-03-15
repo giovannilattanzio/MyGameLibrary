@@ -1,12 +1,17 @@
 import 'package:my_game_library/src/models/game_model.dart';
+import 'package:my_game_library/src/models/platform_logo_model.dart';
+import 'package:my_game_library/src/models/platform_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:my_game_library/src/repo/repository.dart' show Source, Cache;
-import 'package:my_game_library/src/utils/igdb/igdb_game_fields.dart';
+import 'package:my_game_library/src/utils/igdb/igdb_games.dart';
+import 'package:my_game_library/src/utils/igdb/igdb_platforms.dart';
 import 'package:my_game_library/src/utils/sqflite/db_personal_game_fields.dart';
 
 class IGDBDbProvider implements Source, Cache {
   final String _gamesTableName = "games";
+  final String _platformsTableName = "platforms";
+  final String _platformLogoTableName = "platform_logo";
 
   static final IGDBDbProvider _instance = IGDBDbProvider._internal();
 
@@ -63,6 +68,41 @@ class IGDBDbProvider implements Source, Cache {
           ${DBPersonalGameFields.favorite} INTEGER
         )
     """);
+
+    db.execute("""
+      CREATE TABLE $_platformsTableName
+        (
+          ${IGDBPlatformFields.id} INTEGER PRIMARY KEY,
+          ${IGDBPlatformFields.abbreviation} STRING,
+          ${IGDBPlatformFields.alternative_name} STRING,
+          ${IGDBPlatformFields.category} INTEGER,
+          ${IGDBPlatformFields.created_at} INTEGER,
+          ${IGDBPlatformFields.generation} INTEGER,
+          ${IGDBPlatformFields.name} STRING,
+          ${IGDBPlatformFields.platform_logo} INTEGER,
+          ${IGDBPlatformFields.product_family} INTEGER,
+          ${IGDBPlatformFields.slug} STRING,
+          ${IGDBPlatformFields.summary} STRING,
+          ${IGDBPlatformFields.updated_at} INTEGER,
+          ${IGDBPlatformFields.url} STRING,
+          ${IGDBPlatformFields.versions} BLOB,
+          ${IGDBPlatformFields.websites} BLOB,
+          ${DBPersonalGameFields.order_number} INTEGER
+        )
+    """);
+
+    db.execute("""
+      CREATE TABLE $_platformLogoTableName
+        (
+          ${IGDBPlatformLogoFields.id} INTEGER PRIMARY KEY,
+          ${IGDBPlatformLogoFields.alpha_channel} INTEGER,
+          ${IGDBPlatformLogoFields.animated} INTEGER,
+          ${IGDBPlatformLogoFields.height} INTEGER,
+          ${IGDBPlatformLogoFields.image_id} STRING,
+          ${IGDBPlatformLogoFields.url} STRING,
+          ${IGDBPlatformLogoFields.width} INTEGER
+        )
+    """);
   }
 
   /// Metodo per recuperare uno o più giochi dal database interno.
@@ -76,7 +116,9 @@ class IGDBDbProvider implements Source, Cache {
     final map = await dbInstance.query(
       _gamesTableName,
       columns: null,
-      where: id != null ? "${IGDBGameFields.id} = ?" : "name LIKE ?",
+      where: id != null
+          ? "${IGDBGameFields.id} = ?"
+          : "${IGDBGameFields.name} LIKE ?",
       whereArgs: id != null ? [id] : ['%$query%'],
     );
 
@@ -102,7 +144,7 @@ class IGDBDbProvider implements Source, Cache {
 
     String where = "${DBPersonalGameFields.favorite} = ?";
     if (query != null && query.isNotEmpty) {
-      where += "AND name LIKE ?";
+      where += "AND ${IGDBGameFields.name} LIKE ?";
     }
 
     final map = await dbInstance.query(
@@ -119,6 +161,51 @@ class IGDBDbProvider implements Source, Cache {
     }
 
     return [];
+  }
+
+  /// Restituisce la lista di piattaforme salvate sul database interno
+  @override
+  Future<List<PlatformModel>> fetchPlatforms() async {
+    var dbInstance = await db;
+
+    final map = await dbInstance.query(
+      _platformsTableName,
+      columns: null,
+      orderBy: "${DBPersonalGameFields.order_number} ASC"
+    );
+
+    if (map.length > 0) {
+      final list = map.map((platform) {
+        return PlatformModel.fromDB(platform);
+      });
+
+      return list?.toList();
+    }
+
+    return null;
+  }
+
+  /// Restituisce l'oggetto che mappa il logo di una piattaforma
+  @override
+  Future<PlatformLogoModel> fetchPlatformLogo(int id) async {
+    var dbInstance = await db;
+
+    final map = await dbInstance.query(
+      _platformLogoTableName,
+      columns: null,
+      where: "${IGDBPlatformLogoFields.id} = ?",
+      whereArgs: [id],
+    );
+
+    if (map.length > 0) {
+      final list = map.map((platformLogo) {
+        return PlatformLogoModel.fromDB(platformLogo);
+      });
+
+      return list?.toList()?.first;
+    }
+
+    return null;
   }
 
   /// Metodo per gestire il salvataggio di un singolo gioco nel db interno
@@ -150,6 +237,43 @@ class IGDBDbProvider implements Source, Cache {
         );
       });
       batch.commit(noResult: true);
+    });
+  }
+
+  /// Metodo per gestire il salvataggio massivo di una lista di piattaforme nel db interno
+  ///
+  /// In caso di conflitti ([id] già presente) il record verrà sovrascritto
+  @override
+  Future<int> savePlatforms(List<PlatformModel> platforms) {
+    return db.then((database) {
+      var batch = database.batch();
+      var orderToSave = 100;
+      platforms.forEach((platform) {
+        platform.orderNumber = orderToSave;
+
+        batch.insert(
+          _platformsTableName,
+          platform.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+
+        orderToSave += 100;
+      });
+      batch.commit(noResult: true);
+    });
+  }
+
+  /// Metodo per gestire il salvataggio di un logo di una piattaforma
+  ///
+  /// In caso di conflitti ([id] già presente) il record verrà sovrascritto
+  @override
+  Future<int> savePlatformLogo(PlatformLogoModel platformLogo) {
+    return db.then((database) {
+      database.insert(
+        _platformLogoTableName,
+        platformLogo.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
     });
   }
 
