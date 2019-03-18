@@ -140,8 +140,7 @@ class _HomeState extends State<Home> {
                         }
 
                         PlatformLogoModel platformLogo = snapshotLogoData.data;
-                        return Image.network(IGDBClient.getImageUrl(
-                            platformLogo.imageId, IGDBImageSizes.LOGO_MED));
+                        return Image.network(platformLogo.imageUrlMed);
                       },
                     );
                   },

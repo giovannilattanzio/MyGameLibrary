@@ -30,7 +30,7 @@ class IGDBApiProvider implements Source {
 
     final gamesResponse = await _client.games(requestParameters);
 
-    print(IGDBClient.getPrettyStringFromMap(gamesResponse.toMap()));
+    print(IGDBHelpers.getPrettyStringFromMap(gamesResponse.toMap()));
 
     if (gamesResponse.isSuccess()) {
       // do something with gamesResponse.data
@@ -55,7 +55,7 @@ class IGDBApiProvider implements Source {
 
     final gamesResponse = await _client.games(requestParameters);
 
-    print(IGDBClient.getPrettyStringFromMap(gamesResponse.toMap()));
+    print(IGDBHelpers.getPrettyStringFromMap(gamesResponse.toMap()));
 
     if (gamesResponse.isSuccess()) {
       return _gamesListFromResponse(gamesResponse);
@@ -103,7 +103,7 @@ class IGDBApiProvider implements Source {
     );
 
     final platformLogoResponse =
-        await _client.requestByPath("platform_logos", requestParameters);
+        await _client.platformLogos(requestParameters);
 
     if (platformLogoResponse.isSuccess()) {
       final platformLogoList = platformLogoResponse.data

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:igdb_client/igdb_client.dart';
 import 'package:my_game_library/src/utils/igdb/igdb_platforms.dart';
 
 /// Classe di model di un logo di una piattaforma
@@ -10,11 +11,13 @@ class PlatformLogoModel {
   final String imageId;
   final String url;
   final int width;
+  String _imageUrl;
 
   /// Named contructor che, partendo da un json decodificato, mappa tutti i campi della classe
   PlatformLogoModel.fromJson(Map<String, dynamic> parsedJson)
       : id = parsedJson[IGDBPlatformLogoFields.id],
-        alphaChannel = parsedJson[IGDBPlatformLogoFields.alpha_channel] ?? false,
+        alphaChannel =
+            parsedJson[IGDBPlatformLogoFields.alpha_channel] ?? false,
         animated = parsedJson[IGDBPlatformLogoFields.animated] ?? false,
         height = parsedJson[IGDBPlatformLogoFields.height],
         imageId = parsedJson[IGDBPlatformLogoFields.image_id],
@@ -43,4 +46,7 @@ class PlatformLogoModel {
       IGDBPlatformLogoFields.width: width,
     };
   }
+
+  String get imageUrlMed =>
+      IGDBHelpers.getImageUrl(imageId, IGDBImageSizes.LOGO_MED);
 }
