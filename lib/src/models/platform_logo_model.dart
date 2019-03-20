@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:igdb_client/igdb_client.dart';
 import 'package:my_game_library/src/utils/igdb/igdb_platforms.dart';
 
@@ -11,7 +10,6 @@ class PlatformLogoModel {
   final String imageId;
   final String url;
   final int width;
-  String _imageUrl;
 
   /// Named contructor che, partendo da un json decodificato, mappa tutti i campi della classe
   PlatformLogoModel.fromJson(Map<String, dynamic> parsedJson)
@@ -37,7 +35,7 @@ class PlatformLogoModel {
   /// Metodo per mappare i campi della classe e restituire un [Map] di tipo [String] come chiave e [dynamic] come valore
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
-      IGDBPlatformFields.id: id,
+      IGDBPlatformLogoFields.id: id,
       IGDBPlatformLogoFields.alpha_channel: alphaChannel ? 1 : 0,
       IGDBPlatformLogoFields.animated: animated ? 1 : 0,
       IGDBPlatformLogoFields.height: height,

@@ -1,8 +1,9 @@
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:my_game_library/src/models/game_model.dart';
+import 'package:my_game_library/src/models/game_cover_model.dart';
 import 'package:my_game_library/src/models/platform_logo_model.dart';
 import 'package:my_game_library/src/models/platform_model.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
 import 'package:my_game_library/src/repo/repository.dart' show Source, Cache;
 import 'package:my_game_library/src/utils/igdb/igdb_games.dart';
 import 'package:my_game_library/src/utils/igdb/igdb_platforms.dart';
@@ -10,6 +11,7 @@ import 'package:my_game_library/src/utils/sqflite/db_personal_game_fields.dart';
 
 class IGDBDbProvider implements Source, Cache {
   final String _gamesTableName = "games";
+  final String _gameCoverTableName = "game_cover";
   final String _platformsTableName = "platforms";
   final String _platformLogoTableName = "platform_logo";
 
@@ -68,6 +70,21 @@ class IGDBDbProvider implements Source, Cache {
           ${DBPersonalGameFields.favorite} INTEGER
         )
     """);
+
+    db.execute("""
+      CREATE TABLE $_gameCoverTableName
+        (
+          ${IGDBGameCoverFields.id} INTEGER PRIMARY KEY,
+          ${IGDBGameCoverFields.alpha_channel} INTEGER,
+          ${IGDBGameCoverFields.animated} INTEGER,
+          ${IGDBGameCoverFields.game} INTEGER,
+          ${IGDBGameCoverFields.height} INTEGER,
+          ${IGDBGameCoverFields.image_id} STRING,
+          ${IGDBGameCoverFields.url} STRING,
+          ${IGDBGameCoverFields.width} INTEGER
+        )
+    """);
+
 
     db.execute("""
       CREATE TABLE $_platformsTableName
@@ -163,6 +180,29 @@ class IGDBDbProvider implements Source, Cache {
     return [];
   }
 
+  /// Restituisce l'oggetto che mappa la cover di un gioco
+  @override
+  Future<GameCoverModel> fetchGameCover(int id) async {
+    var dbInstance = await db;
+
+    final map = await dbInstance.query(
+      _gameCoverTableName,
+      columns: null,
+      where: "${IGDBGameCoverFields.id} = ?",
+      whereArgs: [id],
+    );
+
+    if (map.length > 0) {
+      final list = map.map((gameCover) {
+        return GameCoverModel.fromDB(gameCover);
+      });
+
+      return list?.toList()?.first;
+    }
+
+    return null;
+  }
+
   /// Restituisce la lista di piattaforme salvate sul database interno
   @override
   Future<List<PlatformModel>> fetchPlatforms() async {
@@ -237,6 +277,20 @@ class IGDBDbProvider implements Source, Cache {
         );
       });
       batch.commit(noResult: true);
+    });
+  }
+
+  /// Metodo per gestire il salvataggio di una cover di un gioco
+  ///
+  /// In caso di conflitti ([id] già presente) il record verrà sovrascritto
+  @override
+  Future<int> saveGameCover(GameCoverModel gameCover) {
+    return db.then((database) {
+      database.insert(
+        _gameCoverTableName,
+        gameCover.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
     });
   }
 

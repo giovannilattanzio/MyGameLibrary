@@ -1,4 +1,5 @@
 import 'package:igdb_client/igdb_client.dart';
+import 'package:my_game_library/src/models/game_cover_model.dart';
 import 'package:my_game_library/src/models/game_model.dart';
 import 'package:my_game_library/src/models/platform_logo_model.dart';
 import 'package:my_game_library/src/models/platform_model.dart';
@@ -67,6 +68,27 @@ class IGDBApiProvider implements Source {
   @override
   Future<List<GameModel>> fetchFavoriteGames({String query}) {
     return null;
+  }
+
+  /// Restituisce l'oggetto che mappa la cover di un gioco dall'API di IGDB.
+  @override
+  Future<GameCoverModel> fetchGameCover(int id) async {
+    final requestParameters = IGDBRequestParameters(
+      fields: ['*'],
+      ids: [id],
+    );
+
+    final gameCoverResponse =
+        await _client.covers(requestParameters);
+
+    if (gameCoverResponse.isSuccess()) {
+      final gameCoverList = gameCoverResponse.data
+          .map((gameCover) => GameCoverModel.fromJson(gameCover));
+
+      return gameCoverList?.toList()?.first;
+    } else {
+      return null;
+    }
   }
 
   /// Restituisce la lista di piattaforme dall'API di IGDB.

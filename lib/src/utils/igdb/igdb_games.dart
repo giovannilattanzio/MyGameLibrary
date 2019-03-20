@@ -19,3 +19,14 @@ class IGDBGameFields {
   static const String videos = 'videos';
   static const String websites = 'websites';
 }
+
+class IGDBGameCoverFields {
+  static const String id = 'id';
+  static const String alpha_channel = 'alpha_channel';
+  static const String animated = 'animated';
+  static const String game = 'game';
+  static const String height = 'height';
+  static const String image_id = 'image_id';
+  static const String url = 'url';
+  static const String width = 'width';
+}

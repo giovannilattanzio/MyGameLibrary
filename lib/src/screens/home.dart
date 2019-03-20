@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:igdb_client/igdb_client.dart';
 import 'package:my_game_library/src/blocs/games_bloc.dart';
 import 'package:my_game_library/src/models/game_model.dart';
 import 'package:my_game_library/src/models/platform_model.dart';
 import 'package:my_game_library/src/models/platform_logo_model.dart';
+import 'package:my_game_library/src/widgets/game_cover.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -194,7 +194,12 @@ class _HomeState extends State<Home> {
               itemBuilder: (context, index) {
                 final GameModel game = snapshot.data[index];
 
+                bloc.fetchGameCover(game.cover);
+
                 return ListTile(
+                  leading: GameCover(
+                    coverId: game.cover,
+                  ),
                   title: Text(game.name),
                 );
               },

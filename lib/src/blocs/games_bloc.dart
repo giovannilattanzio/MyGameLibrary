@@ -1,6 +1,7 @@
 import 'package:rxdart/rxdart.dart';
 import 'package:my_game_library/src/blocs/bloc_provider.dart';
 import 'package:my_game_library/src/models/game_model.dart';
+import 'package:my_game_library/src/models/game_cover_model.dart';
 import 'package:my_game_library/src/models/platform_model.dart';
 import 'package:my_game_library/src/models/platform_logo_model.dart';
 import 'package:my_game_library/src/repo/repository.dart';
@@ -10,6 +11,9 @@ export 'bloc_provider.dart';
 class GamesBloc implements BlocBase {
   final _repository = Repository();
   final _gamesSubject = PublishSubject<List<GameModel>>();
+  final _gameCoverFetcherSubject = PublishSubject<int>();
+  final _gameCoverOutputSubject =
+      BehaviorSubject<Map<int, Future<GameCoverModel>>>();
 
 //  final _indexAppBarSubject = BehaviorSubject<int>.seeded(0);
   final _isListLoadingSubject = BehaviorSubject<bool>.seeded(false);
@@ -20,6 +24,9 @@ class GamesBloc implements BlocBase {
 
   Observable<List<GameModel>> get games => _gamesSubject.stream;
 
+  Observable<Map<int, Future<GameCoverModel>>> get gameCover =>
+      _gameCoverOutputSubject.stream;
+
 //  Observable<int> get indexAppBar => _indexAppBarSubject.stream;
   Observable<bool> get isListLoading => _isListLoadingSubject.stream;
 
@@ -29,6 +36,10 @@ class GamesBloc implements BlocBase {
       _platformLogoOutputSubject.stream;
 
   GamesBloc() {
+    _gameCoverFetcherSubject.stream
+        .transform(_gameCoverTransformer())
+        .pipe(_gameCoverOutputSubject);
+
     _platformLogoFetcherSubject.stream
         .transform(_platformLogoTransformer())
         .pipe(_platformLogoOutputSubject);
@@ -55,6 +66,10 @@ class GamesBloc implements BlocBase {
     _isListLoadingSubject.sink.add(false);
   }
 
+  void fetchGameCover(int id) {
+    _gameCoverFetcherSubject.sink.add(id);
+  }
+
 //  void changeIndexAppBar(int index) {
 //    _indexAppBarSubject.sink.add(index);
 //  }
@@ -71,11 +86,25 @@ class GamesBloc implements BlocBase {
   @override
   void dispose() {
     _gamesSubject.close();
+    _gameCoverFetcherSubject.close();
+    _gameCoverOutputSubject.close();
 //    _indexAppBarSubject.close();
     _isListLoadingSubject.close();
     _platformSubject.close();
     _platformLogoFetcherSubject.close();
     _platformLogoOutputSubject.close();
+  }
+
+  ScanStreamTransformer<int, Map<int, Future<GameCoverModel>>>
+      _gameCoverTransformer() {
+    return ScanStreamTransformer<int, Map<int, Future<GameCoverModel>>>(
+      (Map<int, Future<GameCoverModel>> cache, int id, _) {
+        cache[id] = _repository.fetchGameCover(id);
+
+        return cache;
+      },
+      <int, Future<GameCoverModel>>{},
+    );
   }
 
   ScanStreamTransformer<int, Map<int, Future<PlatformLogoModel>>>

@@ -1,4 +1,5 @@
 import 'package:my_game_library/src/models/game_model.dart';
+import 'package:my_game_library/src/models/game_cover_model.dart';
 import 'package:my_game_library/src/models/platform_model.dart';
 import 'package:my_game_library/src/models/platform_logo_model.dart';
 import 'package:my_game_library/src/repo/igdb_api_provider.dart';
@@ -80,6 +81,28 @@ class Repository {
     return gamesList;
   }
 
+  /// Restituisce l'oggetto che mappa la cover di un gioco
+  Future<GameCoverModel> fetchGameCover(int id) async {
+    GameCoverModel gameCover;
+    var source;
+
+    if (id != null) {
+      for (source in sources) {
+        gameCover = await source.fetchGameCover(id);
+        if (gameCover != null) {
+          for (final cache in caches) {
+            if (cache != source) {
+              cache.saveGameCover(gameCover);
+            }
+          }
+          break;
+        }
+      }
+    }
+
+    return gameCover;
+  }
+
   /// Restituisce tutte le piattaforme
   Future<List<PlatformModel>> fetchPlatforms() async {
     List<PlatformModel> platformsList;
@@ -137,6 +160,8 @@ abstract class Source {
 
   Future<List<GameModel>> fetchFavoriteGames({String query});
 
+  Future<GameCoverModel> fetchGameCover(int id);
+
   Future<List<PlatformModel>> fetchPlatforms();
 
   Future<PlatformLogoModel> fetchPlatformLogo(int id);
@@ -147,9 +172,11 @@ abstract class Cache {
 
   Future<int> saveGames(List<GameModel> games);
 
-  Future<int> savePlatforms(List<PlatformModel> platforms);
+  Future<int> saveGameCover(GameCoverModel gameCover);
 
   Future<int> savePlatformLogo(PlatformLogoModel platformLogo);
+
+  Future<int> savePlatforms(List<PlatformModel> platforms);
 
   Future<int> clear();
 }
