@@ -4,6 +4,7 @@ import 'package:my_game_library/src/models/game_model.dart';
 import 'package:my_game_library/src/models/platform_model.dart';
 import 'package:my_game_library/src/models/platform_logo_model.dart';
 import 'package:my_game_library/src/widgets/game_cover.dart';
+import 'package:my_game_library/src/widgets/fab_bottom_appbar.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -11,7 +12,6 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  int _currentIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -23,27 +23,21 @@ class _HomeState extends State<Home> {
         centerTitle: true,
       ),
       body: _createBody(),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.beach_access),
-            title: Text("Zelda"),
+      bottomNavigationBar: FABBottomAppBar(
+        items: <FABBottomAppBarItem>[
+          FABBottomAppBarItem(
+            iconData: Icons.home,
+            text: "Home",
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.new_releases),
-            title: Text("Nuove uscite"),
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            title: Text("Preferiti"),
+          FABBottomAppBarItem(
+            iconData: Icons.favorite,
+            text: "Preferiti",
           ),
         ],
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-
+        notchedShape: CircularNotchedRectangle(),
+        color: Colors.blue,
+        selectedColor: Colors.redAccent,
+        onTabSelected: (index) {
           switch (index) {
             case 0:
               bloc.fetchGames(query: "zelda");
@@ -58,6 +52,12 @@ class _HomeState extends State<Home> {
               break;
           }
         },
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        child: Icon(Icons.search),
+        elevation: 2.0,
       ),
     );
   }
