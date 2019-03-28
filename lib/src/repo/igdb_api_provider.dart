@@ -10,7 +10,7 @@ class IGDBApiProvider implements Source {
   final _client = IGDBClient(
     "Flutter",
     IGDBApi.API,
-//    logger: IGDBConsoleLogger(),
+    //logger: IGDBConsoleLogger(),
   );
 
   /// Metodo per recuperare uno o più giochi dalla chiamata all'API di IGDB.
@@ -51,7 +51,7 @@ class IGDBApiProvider implements Source {
       fields: ['*'],
       search: query != null ? query : null,
       filters:
-          'first_release_date > ${DateTime(DateTime.now().year, DateTime.now().month - 1, DateTime.now().day).millisecondsSinceEpoch}',
+          'first_release_date > ${(DateTime(DateTime.now().year, DateTime.now().month - 1, DateTime.now().day).millisecondsSinceEpoch ~/ 1000)}',
     );
 
     final gamesResponse = await _client.games(requestParameters);

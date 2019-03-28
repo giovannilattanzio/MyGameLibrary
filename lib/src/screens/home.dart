@@ -12,7 +12,6 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<GamesBloc>(context);
@@ -73,7 +72,10 @@ class _HomeState extends State<Home> {
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
-                Container(height: 50.0, child: _listPlatforms()),
+                Container(
+                  height: 50.0,
+                  child: _listPlatforms(),
+                ),
                 Expanded(
                   child: _listGames(),
                 ),
