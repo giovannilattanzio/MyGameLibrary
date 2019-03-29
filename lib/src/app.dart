@@ -21,7 +21,6 @@ class App extends StatelessWidget {
 
           final _bloc = BlocProvider.of<GamesBloc>(context);
           _bloc.fetchPlatforms();
-          _bloc.fetchGames(query: "zelda");
 
           return Home();
         },

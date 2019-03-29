@@ -49,6 +49,16 @@ class GameCoverModel {
     };
   }
 
+  String get imageUrlSmall =>
+      IGDBHelpers.getImageUrl(imageId, IGDBImageSizes.COVER_SMALL);
   String get imageUrlMed =>
       IGDBHelpers.getImageUrl(imageId, IGDBImageSizes.LOGO_MED);
+  String get imageUrlBig =>
+      IGDBHelpers.getImageUrl(imageId, IGDBImageSizes.COVER_BIG);
+  String get imageUrlSmall2x =>
+      IGDBHelpers.getImageUrl(imageId, IGDBImageSizes.COVER_SMALL, isRetina: true);
+  String get imageUrlMed2x =>
+      IGDBHelpers.getImageUrl(imageId, IGDBImageSizes.LOGO_MED, isRetina: true);
+  String get imageUrlBig2x =>
+      IGDBHelpers.getImageUrl(imageId, IGDBImageSizes.COVER_BIG, isRetina: true);
 }

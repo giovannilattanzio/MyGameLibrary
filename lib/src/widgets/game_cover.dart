@@ -10,8 +10,8 @@ class GameCover extends StatelessWidget {
 
   GameCover({
     this.coverId,
-    this.width = 50.0,
-    this.height = 50.0,
+    this.width,
+    this.height,
   });
 
   @override
@@ -48,7 +48,7 @@ class GameCover extends StatelessWidget {
 
   Widget _buildCover(GameCoverModel cover) {
     return Image.network(
-      cover.imageUrlMed,
+      cover.imageUrlBig2x,
       width: width,
       height: height,
     );

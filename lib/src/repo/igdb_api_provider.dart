@@ -17,8 +17,10 @@ class IGDBApiProvider implements Source {
   ///
   /// In caso di passaggio di un [id], verrà restituita una lista con al massimo un elemento
   /// In caso di passaggio di una String [query] verrà restituita una lista con tutti i giochi con il nome contenente tale valore
+  ///
+  /// Se si vuole un completo controllo, si può passare il campo [filters] che verrà gestito per le richieste più complesse
   @override
-  Future<List<GameModel>> fetchGames({int id, String query}) async {
+  Future<List<GameModel>> fetchGames({int id, String filters, String query}) async {
     final requestParameters = id != null
         ? IGDBRequestParameters(
             fields: ['*'],
@@ -26,12 +28,13 @@ class IGDBApiProvider implements Source {
           )
         : IGDBRequestParameters(
             fields: ['*'],
+            filters: filters,
             search: query,
           );
 
     final gamesResponse = await _client.games(requestParameters);
 
-    print(IGDBHelpers.getPrettyStringFromMap(gamesResponse.toMap()));
+//    print(IGDBHelpers.getPrettyStringFromMap(gamesResponse.toMap()));
 
     if (gamesResponse.isSuccess()) {
       // do something with gamesResponse.data
@@ -55,8 +58,6 @@ class IGDBApiProvider implements Source {
     );
 
     final gamesResponse = await _client.games(requestParameters);
-
-    print(IGDBHelpers.getPrettyStringFromMap(gamesResponse.toMap()));
 
     if (gamesResponse.isSuccess()) {
       return _gamesListFromResponse(gamesResponse);

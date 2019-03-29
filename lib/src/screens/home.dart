@@ -3,7 +3,7 @@ import 'package:my_game_library/src/blocs/games_bloc.dart';
 import 'package:my_game_library/src/models/game_model.dart';
 import 'package:my_game_library/src/models/platform_model.dart';
 import 'package:my_game_library/src/models/platform_logo_model.dart';
-import 'package:my_game_library/src/widgets/game_cover.dart';
+import 'package:my_game_library/src/widgets/game_card.dart';
 import 'package:my_game_library/src/widgets/fab_bottom_appbar.dart';
 
 class Home extends StatefulWidget {
@@ -38,17 +38,17 @@ class _HomeState extends State<Home> {
         selectedColor: Colors.redAccent,
         onTabSelected: (index) {
           switch (index) {
-            case 0:
-              bloc.fetchGames(query: "zelda");
-              break;
-
-            case 1:
-              bloc.fetchLatestGames();
-              break;
-
-            case 2:
-              bloc.fetchFavoriteGames();
-              break;
+//            case 0:
+//              bloc.fetchGames(query: "zelda");
+//              break;
+//
+//            case 1:
+//              bloc.fetchLatestGames();
+//              break;
+//
+//            case 2:
+//              bloc.fetchFavoriteGames();
+//              break;
           }
         },
       ),
@@ -62,29 +62,7 @@ class _HomeState extends State<Home> {
   }
 
   Widget _createBody() {
-    return Container(
-      child: Stack(
-        children: <Widget>[
-          Padding(
-            padding: EdgeInsets.only(top: 10.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: <Widget>[
-                Container(
-                  height: 50.0,
-                  child: _listPlatforms(),
-                ),
-                Expanded(
-                  child: _listGames(),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+    return _listPlatforms();
   }
 
   Widget _listPlatforms() {
@@ -98,7 +76,6 @@ class _HomeState extends State<Home> {
         }
 
         return ListView.builder(
-          scrollDirection: Axis.horizontal,
           itemCount: snapshot.data.length,
           itemBuilder: (context, index) {
             final PlatformModel platform = snapshot.data[index];
@@ -118,39 +95,47 @@ class _HomeState extends State<Home> {
                   );
 
             bloc.fetchPlatformLogo(platform.platformLogo);
+            String fetcher = "platforms='${platform.id}'";
+            bloc.fetchGames(fetcher);
 
             return Padding(
               padding: padding,
-              child: RaisedButton(
-                child: StreamBuilder(
-                  stream: bloc.platformLogo,
-                  builder: (context,
-                      AsyncSnapshot<Map<int, Future<PlatformLogoModel>>>
-                          snapshotLogo) {
-                    if (!snapshotLogo.hasData ||
-                        platform.platformLogo == null ||
-                        snapshotLogo.data[platform.platformLogo] == null) {
-                      return Text(platform.name);
-                    }
+              child: Card(
+                child: Container(
+                  height: 250.0,
+                  child: Stack(
+                    children: <Widget>[
+                      StreamBuilder(
+                        stream: bloc.platformLogo,
+                        builder: (context,
+                            AsyncSnapshot<Map<int, Future<PlatformLogoModel>>>
+                                snapshotLogo) {
+                          if (!snapshotLogo.hasData ||
+                              platform.platformLogo == null ||
+                              snapshotLogo.data[platform.platformLogo] == null) {
+                            return Text(platform.name);
+                          }
 
-                    return FutureBuilder(
-                      future: snapshotLogo.data[platform.platformLogo],
-                      builder: (context,
-                          AsyncSnapshot<PlatformLogoModel> snapshotLogoData) {
-                        if (!snapshotLogoData.hasData) {
-                          return Container();
-                        }
+                          return FutureBuilder(
+                            future: snapshotLogo.data[platform.platformLogo],
+                            builder: (context,
+                                AsyncSnapshot<PlatformLogoModel> snapshotLogoData) {
+                              if (!snapshotLogoData.hasData) {
+                                return Container();
+                              }
 
-                        PlatformLogoModel platformLogo = snapshotLogoData.data;
-                        return Image.network(platformLogo.imageUrlMed);
-                      },
-                    );
-                  },
+                              PlatformLogoModel platformLogo =
+                                  snapshotLogoData.data;
+                              return Image.network(platformLogo.imageUrlMed);
+
+                            },
+                          );
+                        },
+                      ),
+                      _listGames(fetcher),
+                    ],
+                  ),
                 ),
-                onPressed: () {
-                  debugPrint("Id platform ${platform.id}");
-                  debugPrint("Nome platform ${platform.name}");
-                },
               ),
             );
           },
@@ -159,24 +144,30 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget _listGames() {
+  Widget _listGames(String fetcher) {
     final bloc = BlocProvider.of<GamesBloc>(context);
 
     return StreamBuilder(
       stream: bloc.games,
-      builder: (context, AsyncSnapshot<List<GameModel>> snapshot) {
-        return StreamBuilder(
-          stream: bloc.isListLoading,
-          builder: (context, AsyncSnapshot<bool> snapshotLoading) {
+      builder: (context, AsyncSnapshot<Map<String, Future<List<GameModel>>>> snapshot) {
+
+        if (!snapshot.hasData) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        return FutureBuilder(
+          future: snapshot.data[fetcher],
+          builder: (context, AsyncSnapshot<List<GameModel>> snapshotGames) {
             if (!snapshot.hasData ||
-                !snapshotLoading.hasData ||
-                snapshotLoading.data) {
+                !snapshotGames.hasData) {
               return Center(
                 child: CircularProgressIndicator(),
               );
             }
 
-            if (snapshot.data.length == 0) {
+            if (snapshotGames.data.length == 0) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -192,18 +183,14 @@ class _HomeState extends State<Home> {
             }
 
             return ListView.builder(
-              itemCount: snapshot.data.length,
+              scrollDirection: Axis.horizontal,
+              itemCount: snapshotGames.data.length,
               itemBuilder: (context, index) {
-                final GameModel game = snapshot.data[index];
+                final GameModel game = snapshotGames.data[index];
 
                 bloc.fetchGameCover(game.cover);
 
-                return ListTile(
-                  leading: GameCover(
-                    coverId: game.cover,
-                  ),
-                  title: Text(game.name),
-                );
+                return GameCard(game: game);
               },
             );
           },

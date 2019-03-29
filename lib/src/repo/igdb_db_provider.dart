@@ -127,7 +127,7 @@ class IGDBDbProvider implements Source, Cache {
   /// In caso di passaggio di un [id], verrà restituita una lista con al massimo un elemento
   /// In caso di passaggio di una String [query] verrà restituita una lista con tutti i giochi con il nome contenente tale valore
   @override
-  Future<List<GameModel>> fetchGames({int id, String query}) async {
+  Future<List<GameModel>> fetchGames({int id, String filters, String query}) async {
     var dbInstance = await db;
 
     final map = await dbInstance.query(

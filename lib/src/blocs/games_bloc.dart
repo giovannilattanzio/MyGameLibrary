@@ -10,25 +10,29 @@ export 'bloc_provider.dart';
 
 class GamesBloc implements BlocBase {
   final _repository = Repository();
-  final _gamesSubject = PublishSubject<List<GameModel>>();
+  final _gamesFetcherSubject = BehaviorSubject<String>();
+  final _gamesOutputSubject =
+      BehaviorSubject<Map<String, Future<List<GameModel>>>>();
   final _gameCoverFetcherSubject = PublishSubject<int>();
   final _gameCoverOutputSubject =
       BehaviorSubject<Map<int, Future<GameCoverModel>>>();
 
 //  final _indexAppBarSubject = BehaviorSubject<int>.seeded(0);
-  final _isListLoadingSubject = BehaviorSubject<bool>.seeded(false);
+//  final _isListLoadingSubject = BehaviorSubject<Map<String, bool>>();
   final _platformSubject = BehaviorSubject<List<PlatformModel>>();
   final _platformLogoFetcherSubject = PublishSubject<int>();
   final _platformLogoOutputSubject =
       BehaviorSubject<Map<int, Future<PlatformLogoModel>>>();
 
-  Observable<List<GameModel>> get games => _gamesSubject.stream;
+  Observable<Map<String, Future<List<GameModel>>>> get games =>
+      _gamesOutputSubject.stream;
 
   Observable<Map<int, Future<GameCoverModel>>> get gameCover =>
       _gameCoverOutputSubject.stream;
 
 //  Observable<int> get indexAppBar => _indexAppBarSubject.stream;
-  Observable<bool> get isListLoading => _isListLoadingSubject.stream;
+//  Observable<Map<String, bool>> get isListLoading =>
+//      _isListLoadingSubject.stream;
 
   Observable<List<PlatformModel>> get platforms => _platformSubject.stream;
 
@@ -36,6 +40,10 @@ class GamesBloc implements BlocBase {
       _platformLogoOutputSubject.stream;
 
   GamesBloc() {
+    _gamesFetcherSubject.stream
+        .transform(_gamesTransformer())
+        .pipe(_gamesOutputSubject);
+
     _gameCoverFetcherSubject.stream
         .transform(_gameCoverTransformer())
         .pipe(_gameCoverOutputSubject);
@@ -45,25 +53,9 @@ class GamesBloc implements BlocBase {
         .pipe(_platformLogoOutputSubject);
   }
 
-  void fetchGames({int id, String query}) async {
-    _isListLoadingSubject.sink.add(true);
-    final games = await _repository.fetchGames(id: id, query: query);
-    _gamesSubject.sink.add(games);
-    _isListLoadingSubject.sink.add(false);
-  }
-
-  void fetchLatestGames({String query}) async {
-    _isListLoadingSubject.sink.add(true);
-    final games = await _repository.fetchLatestGames(query: query);
-    _gamesSubject.sink.add(games);
-    _isListLoadingSubject.sink.add(false);
-  }
-
-  void fetchFavoriteGames({String query}) async {
-    _isListLoadingSubject.sink.add(true);
-    final games = await _repository.fetchFavoriteGames(query: query);
-    _gamesSubject.sink.add(games);
-    _isListLoadingSubject.sink.add(false);
+  void fetchGames(String filters) {
+//    _isListLoadingSubject.add({filters: true});
+    _gamesFetcherSubject.sink.add(filters);
   }
 
   void fetchGameCover(int id) {
@@ -85,14 +77,28 @@ class GamesBloc implements BlocBase {
 
   @override
   void dispose() {
-    _gamesSubject.close();
+    _gamesFetcherSubject.close();
+    _gamesOutputSubject.close();
     _gameCoverFetcherSubject.close();
     _gameCoverOutputSubject.close();
 //    _indexAppBarSubject.close();
-    _isListLoadingSubject.close();
+//    _isListLoadingSubject.close();
     _platformSubject.close();
     _platformLogoFetcherSubject.close();
     _platformLogoOutputSubject.close();
+  }
+
+  ScanStreamTransformer<String, Map<String, Future<List<GameModel>>>>
+      _gamesTransformer() {
+    return ScanStreamTransformer<String, Map<String, Future<List<GameModel>>>>(
+      (Map<String, Future<List<GameModel>>> cache, String string, _) {
+        cache[string] = _repository.fetchGames(filters: string);
+//        _isListLoadingSubject.add({string: false});
+
+        return cache;
+      },
+      <String, Future<List<GameModel>>>{},
+    );
   }
 
   ScanStreamTransformer<int, Map<int, Future<GameCoverModel>>>

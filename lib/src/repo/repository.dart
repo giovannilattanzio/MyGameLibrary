@@ -19,7 +19,9 @@ class Repository {
   ///
   /// In caso di passaggio di un [id], verrà restituita una lista con al massimo un elemento
   /// In caso di passaggio di una String [query] verrà restituita una lista con tutti i giochi con il nome contenente tale valore
-  Future<List<GameModel>> fetchGames({int id, String query}) async {
+  ///
+  /// Se si vuole un completo controllo, si può passare il campo [filters] che verrà gestito per le richieste più complesse
+  Future<List<GameModel>> fetchGames({int id, String filters, String query}) async {
     List<GameModel> gamesList;
     var source;
 
@@ -27,7 +29,7 @@ class Repository {
     ///per evitare il messaggio di conflitto in [cache != source]
 
     for (source in sources) {
-      gamesList = await source.fetchGames(id: id, query: query);
+      gamesList = await source.fetchGames(id: id, filters: filters, query: query);
       if (gamesList != null) {
         for (final cache in caches) {
           if (cache != source) {
@@ -154,7 +156,7 @@ class Repository {
 }
 
 abstract class Source {
-  Future<List<GameModel>> fetchGames({int id, String query});
+  Future<List<GameModel>> fetchGames({int id, String filters, String query});
 
   Future<List<GameModel>> fetchLatestGames({String query});
 
