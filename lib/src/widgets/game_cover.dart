@@ -47,8 +47,9 @@ class GameCover extends StatelessWidget {
   }
 
   Widget _buildCover(GameCoverModel cover) {
-    return Image.network(
-      cover.imageUrlBig2x,
+    return FadeInImage.assetNetwork(
+      placeholder: 'assets/videogame.png',
+      image: cover.imageUrlBig2x,
       width: width,
       height: height,
     );
