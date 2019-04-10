@@ -82,15 +82,15 @@ class _HomeState extends State<Home> {
 
             final EdgeInsets padding = index == 0
                 ? const EdgeInsets.only(
-                    left: 16.0,
+                    left: 8.0,
                     right: 8.0,
                     top: 8.0,
-                    bottom: 8.0,
+                    bottom: 4.0,
                   )
                 : const EdgeInsets.only(
                     left: 8.0,
                     right: 8.0,
-                    top: 8.0,
+                    top: 4.0,
                     bottom: 8.0,
                   );
 
@@ -104,6 +104,7 @@ class _HomeState extends State<Home> {
                 child: Container(
                   height: 250.0,
                   child: Stack(
+                    fit: StackFit.expand,
                     children: <Widget>[
                       StreamBuilder(
                         stream: bloc.platformLogo,
@@ -112,22 +113,34 @@ class _HomeState extends State<Home> {
                                 snapshotLogo) {
                           if (!snapshotLogo.hasData ||
                               platform.platformLogo == null ||
-                              snapshotLogo.data[platform.platformLogo] == null) {
+                              snapshotLogo.data[platform.platformLogo] ==
+                                  null) {
                             return Text(platform.name);
                           }
 
                           return FutureBuilder(
                             future: snapshotLogo.data[platform.platformLogo],
                             builder: (context,
-                                AsyncSnapshot<PlatformLogoModel> snapshotLogoData) {
+                                AsyncSnapshot<PlatformLogoModel>
+                                    snapshotLogoData) {
                               if (!snapshotLogoData.hasData) {
                                 return Container();
                               }
 
                               PlatformLogoModel platformLogo =
                                   snapshotLogoData.data;
-                              return Image.network(platformLogo.imageUrlMed);
 
+                              return Container(
+                                height: 250.0,
+                                child: FittedBox(
+                                  fit:
+                                      (platformLogo.width > platformLogo.height)
+                                          ? BoxFit.fitHeight
+                                          : BoxFit.fitWidth,
+                                  child:
+                                      Image.network(platformLogo.imageUrlMed),
+                                ),
+                              );
                             },
                           );
                         },
@@ -147,68 +160,64 @@ class _HomeState extends State<Home> {
   Widget _listGames(String fetcher) {
     final bloc = BlocProvider.of<GamesBloc>(context);
 
-    return Positioned(
-      bottom: 5.0,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: SizedBox(
-          height: 200,
-          width: 300,
-          child: StreamBuilder(
-            stream: bloc.games,
-            builder: (context, AsyncSnapshot<Map<String, Future<List<GameModel>>>> snapshot) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: StreamBuilder(
+        stream: bloc.games,
+        builder: (context,
+            AsyncSnapshot<Map<String, Future<List<GameModel>>>> snapshot) {
+          if (!snapshot.hasData) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
 
-              if (!snapshot.hasData) {
+          return FutureBuilder(
+            future: snapshot.data[fetcher],
+            builder: (context, AsyncSnapshot<List<GameModel>> snapshotGames) {
+              if (!snapshot.hasData || !snapshotGames.hasData) {
                 return Center(
                   child: CircularProgressIndicator(),
                 );
               }
 
-              return FutureBuilder(
-                future: snapshot.data[fetcher],
-                builder: (context, AsyncSnapshot<List<GameModel>> snapshotGames) {
-                  if (!snapshot.hasData ||
-                      !snapshotGames.hasData) {
-                    return Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  }
-
-                  if (snapshotGames.data.length == 0) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Icon(
-                            Icons.warning,
-                            size: 100.0,
-                          ),
-                          Text("Nessun gioco presente"),
-                        ],
+              if (snapshotGames.data.length == 0) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Icon(
+                        Icons.warning,
+                        size: 100.0,
                       ),
-                    );
-                  }
+                      Text("Nessun gioco presente"),
+                    ],
+                  ),
+                );
+              }
 
-                  return ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: snapshotGames.data.length,
-                    itemBuilder: (context, index) {
-                      final GameModel game = snapshotGames.data[index];
-                      final lastGame = index == snapshotGames.data.length;
+              return ListView.builder(
+                shrinkWrap: true,
+                scrollDirection: Axis.horizontal,
+                itemCount: snapshotGames.data.length,
+                itemBuilder: (context, index) {
+                  final GameModel game = snapshotGames.data[index];
+                  final lastGame = index == snapshotGames.data.length;
 
-                      bloc.fetchGameCover(game.cover);
+                  bloc.fetchGameCover(game.cover);
 
-                      return Padding(
-                        padding: lastGame ? 0.0 : const EdgeInsets.only(right: 8.0),
-                        child: GameCard(game: game),
-                      );
-                    },
+                  return Padding(
+                    padding:
+                        lastGame ? 0.0 : const EdgeInsets.only(right: 8.0),
+                    child: GameCard(
+                      game: game,
+                    ),
                   );
                 },
               );
             },
-          ),
-        ),
+          );
+        },
       ),
     );
   }
