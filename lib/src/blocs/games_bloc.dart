@@ -16,6 +16,7 @@ class GamesBloc implements BlocBase {
   final _gameCoverFetcherSubject = PublishSubject<int>();
   final _gameCoverOutputSubject =
       BehaviorSubject<Map<int, Future<GameCoverModel>>>();
+  final _favouriteGamesSubject = BehaviorSubject<List<GameModel>>();
 
 //  final _indexAppBarSubject = BehaviorSubject<int>.seeded(0);
 //  final _isListLoadingSubject = BehaviorSubject<Map<String, bool>>();
@@ -29,6 +30,8 @@ class GamesBloc implements BlocBase {
 
   Observable<Map<int, Future<GameCoverModel>>> get gameCover =>
       _gameCoverOutputSubject.stream;
+
+  Observable<List<GameModel>> get favouriteGames => _favouriteGamesSubject.stream;
 
 //  Observable<int> get indexAppBar => _indexAppBarSubject.stream;
 //  Observable<Map<String, bool>> get isListLoading =>
@@ -75,12 +78,18 @@ class GamesBloc implements BlocBase {
     _platformLogoFetcherSubject.sink.add(id);
   }
 
+  void fetchFavouriteGames({String query}) async {
+    final favouriteGames = await _repository.fetchFavoriteGames(query: query);
+    _favouriteGamesSubject.sink.add(favouriteGames);
+  }
+
   @override
   void dispose() {
     _gamesFetcherSubject.close();
     _gamesOutputSubject.close();
     _gameCoverFetcherSubject.close();
     _gameCoverOutputSubject.close();
+    _favouriteGamesSubject.close();
 //    _indexAppBarSubject.close();
 //    _isListLoadingSubject.close();
     _platformSubject.close();

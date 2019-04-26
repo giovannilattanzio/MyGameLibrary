@@ -85,7 +85,6 @@ class IGDBDbProvider implements Source, Cache {
         )
     """);
 
-
     db.execute("""
       CREATE TABLE $_platformsTableName
         (
@@ -127,7 +126,8 @@ class IGDBDbProvider implements Source, Cache {
   /// In caso di passaggio di un [id], verrà restituita una lista con al massimo un elemento
   /// In caso di passaggio di una String [query] verrà restituita una lista con tutti i giochi con il nome contenente tale valore
   @override
-  Future<List<GameModel>> fetchGames({int id, String filters, String query}) async {
+  Future<List<GameModel>> fetchGames(
+      {int id, String filters, String query}) async {
     var dbInstance = await db;
 
     final map = await dbInstance.query(
@@ -208,11 +208,8 @@ class IGDBDbProvider implements Source, Cache {
   Future<List<PlatformModel>> fetchPlatforms() async {
     var dbInstance = await db;
 
-    final map = await dbInstance.query(
-      _platformsTableName,
-      columns: null,
-      orderBy: "${DBPersonalGameFields.order_number} ASC"
-    );
+    final map = await dbInstance.query(_platformsTableName,
+        columns: null, orderBy: "${DBPersonalGameFields.order_number} ASC");
 
     if (map.length > 0) {
       final list = map.map((platform) {

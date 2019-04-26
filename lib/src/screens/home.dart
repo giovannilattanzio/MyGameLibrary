@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:my_game_library/src/blocs/games_bloc.dart';
+import 'package:my_game_library/src/models/game_model.dart';
 import 'package:my_game_library/src/models/platform_model.dart';
 import 'package:my_game_library/src/widgets/fab_bottom_appbar.dart';
+import 'package:my_game_library/src/widgets/game_card.dart';
 import 'package:my_game_library/src/widgets/games_platform_list.dart';
 
 class Home extends StatefulWidget {
@@ -10,8 +12,12 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  int _index = 0;
+
   @override
   Widget build(BuildContext context) {
+    final _bloc = BlocProvider.of<GamesBloc>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text("My Game Library"),
@@ -34,18 +40,18 @@ class _HomeState extends State<Home> {
         selectedColor: Colors.redAccent,
         onTabSelected: (index) {
           switch (index) {
-//            case 0:
-//              bloc.fetchGames(query: "zelda");
-//              break;
-//
-//            case 1:
-//              bloc.fetchLatestGames();
-//              break;
-//
-//            case 2:
-//              bloc.fetchFavoriteGames();
-//              break;
+            case 0:
+              _bloc.fetchPlatforms();
+              break;
+
+            case 1:
+              _bloc.fetchFavouriteGames();
+              break;
           }
+
+          setState(() {
+            _index = index;
+          });
         },
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -58,7 +64,14 @@ class _HomeState extends State<Home> {
   }
 
   Widget _createBody() {
-    return _listPlatforms();
+    switch (_index) {
+      case 0:
+        return _listPlatforms();
+        break;
+      case 1:
+        return _listFavourites();
+        break;
+    }
   }
 
   Widget _listPlatforms() {
@@ -88,6 +101,42 @@ class _HomeState extends State<Home> {
               fetcher: fetcher,
             );
           },
+        );
+      },
+    );
+  }
+
+  Widget _listFavourites() {
+    final bloc = BlocProvider.of<GamesBloc>(context);
+
+    return StreamBuilder(
+      stream: bloc.favouriteGames,
+      builder: (context, AsyncSnapshot<List<GameModel>> snapshot) {
+        if (!snapshot.hasData) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        return Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: GridView.builder(
+            itemCount: snapshot.data.length,
+            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+              mainAxisSpacing: 10.0,
+              maxCrossAxisExtent: 200.0,
+              crossAxisSpacing: 10.0,
+            ),
+            itemBuilder: (context, index) {
+              final GameModel game = snapshot.data[index];
+
+              bloc.fetchGameCover(game.cover);
+
+              return GameCard(
+                game: game,
+              );
+            },
+          ),
         );
       },
     );

@@ -71,11 +71,11 @@ class Repository {
     for (source in sources) {
       gamesList = await source.fetchFavoriteGames(query: query);
       if (gamesList != null) {
-        for (final cache in caches) {
-          if (cache != source) {
-            cache.saveGames(gamesList);
-          }
-        }
+//        for (final cache in caches) {
+//          if (cache != source) {
+//            cache.saveGames(gamesList);
+//          }
+//        }
         break;
       }
     }
