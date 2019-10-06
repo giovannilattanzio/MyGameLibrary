@@ -4,6 +4,7 @@ import 'package:my_game_library/src/models/game_model.dart';
 import 'package:my_game_library/src/models/platform_model.dart';
 import 'package:my_game_library/src/widgets/fab_bottom_appbar.dart';
 import 'package:my_game_library/src/widgets/game_card.dart';
+import 'package:my_game_library/src/widgets/game_search.dart';
 import 'package:my_game_library/src/widgets/games_platform_list.dart';
 
 class Home extends StatefulWidget {
@@ -56,7 +57,9 @@ class _HomeState extends State<Home> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          showSearch(context: context, delegate: GameSearch());
+        },
         child: Icon(Icons.search),
         elevation: 2.0,
       ),
