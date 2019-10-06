@@ -46,5 +46,5 @@ class PlatformLogoModel {
   }
 
   String get imageUrlMed =>
-      IGDBHelpers.getImageUrl(imageId, IGDBImageSizes.LOGO_MED);
+      IGDBHelpers.getImageUrl(imageId, IGDBImageSizes.LOGO_MED, alphaChannel: alphaChannel);
 }

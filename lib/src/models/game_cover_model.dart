@@ -50,15 +50,15 @@ class GameCoverModel {
   }
 
   String get imageUrlSmall =>
-      IGDBHelpers.getImageUrl(imageId, IGDBImageSizes.COVER_SMALL);
+      IGDBHelpers.getImageUrl(imageId, IGDBImageSizes.COVER_SMALL, alphaChannel: alphaChannel);
   String get imageUrlMed =>
-      IGDBHelpers.getImageUrl(imageId, IGDBImageSizes.LOGO_MED);
+      IGDBHelpers.getImageUrl(imageId, IGDBImageSizes.LOGO_MED, alphaChannel: alphaChannel);
   String get imageUrlBig =>
-      IGDBHelpers.getImageUrl(imageId, IGDBImageSizes.COVER_BIG);
+      IGDBHelpers.getImageUrl(imageId, IGDBImageSizes.COVER_BIG, alphaChannel: alphaChannel);
   String get imageUrlSmall2x =>
-      IGDBHelpers.getImageUrl(imageId, IGDBImageSizes.COVER_SMALL, isRetina: true);
+      IGDBHelpers.getImageUrl(imageId, IGDBImageSizes.COVER_SMALL, isRetina: true, alphaChannel: alphaChannel);
   String get imageUrlMed2x =>
-      IGDBHelpers.getImageUrl(imageId, IGDBImageSizes.LOGO_MED, isRetina: true);
+      IGDBHelpers.getImageUrl(imageId, IGDBImageSizes.LOGO_MED, isRetina: true, alphaChannel: alphaChannel);
   String get imageUrlBig2x =>
-      IGDBHelpers.getImageUrl(imageId, IGDBImageSizes.COVER_BIG, isRetina: true);
+      IGDBHelpers.getImageUrl(imageId, IGDBImageSizes.COVER_BIG, isRetina: true, alphaChannel: alphaChannel);
 }
